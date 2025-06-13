@@ -16,14 +16,14 @@ async def handle_request(request: Request):
     intent = payload['queryResult']['intent']['displayName']
     parameters = payload['queryResult']['parameters']
     output_contexts = payload['queryResult']['outputContexts']
-    # session_id = generic_helper.extract_session_id(output_contexts[0]["name"])
+    session_id = helper_file.extract_session_id(output_contexts[0]["name"])
 
     session_id = helper_file.extract_session_id(output_contexts[0]['name'])
 
     intent_handler_dict = {
         'order-add - context:ongoing order': add_to_order,
-        # 'order-remove - context:ongoing order': remove_from_order,
-        # 'order-complete - context:ongoing-order': complete_order,
+        #'order-remove - context:ongoing order': remove_from_order,
+        'order-complete - context:ongoing-order': complete_order,
         'track-order - context:ongoing-tracking': track_order
     }
     return intent_handler_dict[intent](parameters,session_id)
@@ -71,15 +71,38 @@ def complete_order(parameters: dict,session_id: str):
         fulfillment_text = "There seems to be an issue getting your id.Could you please start a new order."
     else:
         order = inprogress_orders[session_id]
-        save_to_db(order)
+        order_id = save_to_db(order)
+
+        if order_id == -1:
+            fulfillment_text = "Sorry,couldn't place the order due to some error from our end.Could you please place a new order"
+        else:
+            order_total = db_helper.get_total_order_price(order_id)
+            fulfillment_text = f"Awesome. We have placed your order. " \
+                               f"Here is your order id # {order_id}. " \
+                               f"Your order total is ${order_total} which you can pay at the time of delivery!"
+
+
+        del inprogress_orders[session_id]
+
+    return JSONResponse(content={
+        "fulfillmentText":fulfillment_text
+    })
+
+
+
 
 def save_to_db(order:dict):
     next_order_id = db_helper.get_next_order_id()
 
     for food_item, quantity in order.items():
-        db_helper.insert_order_item(
+        rcode = db_helper.insert_order_item(
             food_item,
             quantity,
             next_order_id
         )
 
+        if rcode == -1:
+            return -1
+
+    db_helper.insert_order_tracking(next_order_id,"in progress")
+    return next_order_id
