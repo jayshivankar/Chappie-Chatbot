@@ -1,5 +1,6 @@
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
+import db_helper
 
 app = FastAPI()
 
@@ -26,6 +27,8 @@ async def handle_request(request: Request):
 
 def track_order(parameters: dict):
     order_id = parameters.get('order_id')
+    order_status = db_helper.get_order_status(order_id)
+
     return JSONResponse(content={
         "fulfillmentText": f"Tracking order with ID: {order_id}"
     })
