@@ -1,6 +1,7 @@
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 import db_helper
+import helper_file
 
 app = FastAPI()
 
@@ -17,21 +18,25 @@ async def handle_request(request: Request):
     output_contexts = payload['queryResult']['outputContexts']
     # session_id = generic_helper.extract_session_id(output_contexts[0]["name"])
 
+    session_id = helper_file.extract_session_id(output_contexts[0]['name'])
+
     intent_handler_dict = {
         'order-add - context:ongoing order': add_to_order,
         # 'order-remove - context:ongoing order': remove_from_order,
         # 'order-complete - context:ongoing-order': complete_order,
         'track-order - context:ongoing-tracking': track_order
     }
-    return intent_handler_dict[intent](parameters)
+    return intent_handler_dict[intent](parameters,session_id)
 
-def add_to_order(parameters: dict):
+
+def add_to_order(parameters: dict,session_id:str):
     food_items = parameters["food-item-names"]
     quantities = parameters["number"]
 
     if len(food_items) != len(quantities):
         fulfillment_text = "Sorry I didn't understand.Can you please specify the quantity."
     else:
+        new_food_dict = dict(zip(food_items, quantities))
         fulfillment_text = f"Recieved {food_items} and {quantities} "
 
     return JSONResponse(content={
