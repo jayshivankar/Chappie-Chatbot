@@ -103,3 +103,4 @@ def get_order_status(order_id):
 
     # Closing the cursor
     cursor.close()
+

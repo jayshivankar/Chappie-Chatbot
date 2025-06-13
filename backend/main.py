@@ -37,7 +37,16 @@ def add_to_order(parameters: dict,session_id:str):
         fulfillment_text = "Sorry I didn't understand.Can you please specify the quantity."
     else:
         new_food_dict = dict(zip(food_items, quantities))
-        fulfillment_text = f"Recieved {food_items} and {quantities} "
+
+        if session_id in inprogress_orders:
+            current_food_dict = inprogress_orders[session_id]
+            current_food_dict.update(new_food_dict)
+            inprogress_orders[session_id] = current_food_dict
+        else:
+            inprogress_orders[session_id] = new_food_dict
+
+        order_str = helper_file.get_str_from_food_dict(inprogress_orders[session_id])
+        fulfillment_text = f"So far you have ordered : {order_str}. Do you need anything else?"
 
     return JSONResponse(content={
         "fulfillmentText": fulfillment_text
@@ -57,4 +66,20 @@ def track_order(parameters: dict):
         "fulfillmentText": fulfillment_text
     })
 
+def complete_order(parameters: dict,session_id: str):
+    if session_id not in inprogress_orders:
+        fulfillment_text = "There seems to be an issue getting your id.Could you please start a new order."
+    else:
+        order = inprogress_orders[session_id]
+        save_to_db(order)
+
+def save_to_db(order:dict):
+    next_order_id = db_helper.get_next_order_id()
+
+    for food_item, quantity in order.items():
+        db_helper.insert_order_item(
+            food_item,
+            quantity,
+            next_order_id
+        )
 
