@@ -110,3 +110,16 @@ h2, h3 {
   border-radius: 10px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
+df-messenger {
+  --df-messenger-button-titlebar-color: #ff9800;
+  --df-messenger-chat-background-color: #fff8e1;
+  --df-messenger-font-color: #4e342e;
+  --df-messenger-user-message: #ffe0b2;
+  --df-messenger-bot-message: #fff3e0;
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 999;
+}
+
+
