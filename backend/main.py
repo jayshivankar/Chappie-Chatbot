@@ -53,7 +53,7 @@ def add_to_order(parameters: dict,session_id:str):
     })
 
 
-def track_order(parameters: dict):
+def track_order(parameters: dict,session_id:str):
     order_id = int(parameters['order_id'])
     order_status = db_helper.get_order_status(order_id)
 
