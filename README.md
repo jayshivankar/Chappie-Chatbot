@@ -150,8 +150,5 @@ Pull requests and feedback welcome!
 
 ---
 
-## 📬 Contact
 
-Made with ❤️ by [Your Name]  
-🔗 [LinkedIn](https://linkedin.com/in/yourprofile) | 🧠 [GitHub](https://github.com/yourusername)
 
